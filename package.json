@@ -1,0 +1,26 @@
+{
+  "name": "elevate",
+  "version": "1.0.0",
+  "description": "Gateway which asks another server or resource for authorization ",
+  "main": "elevate.js",
+  "scripts": {
+    "test": "node tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ensigns/elevate.git"
+  },
+  "keywords": [
+    "auth",
+    "gateway"
+  ],
+  "author": "birm",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ensigns/elevate/issues"
+  },
+  "homepage": "https://github.com/ensigns/elevate#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}

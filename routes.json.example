@@ -1,0 +1,5 @@
+{
+  "_default":"http://localhost:3000/",
+  "data":"http://localhost:3001/",
+  "img":"http://localhost:3002/"
+}

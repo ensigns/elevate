@@ -1,24 +1,31 @@
 // This tool routes in three steps
 // intended to be used (at least) as an exposed docker container
+const express = require('express')
+const rp = require('request-promise');
+const app = express();
+const fs = require("fs")
 
-// Check
-// check if the user is authorized for the resource requested
-
-// Get
-// route and tet the resource
-
-// Return
-// return it to the user
-
-var express = require('express');
-var app = express();
-
-function checkAuth(type, path, request, auth){
-  let a
+// This method should be deployment specific
+function checkAuth(type, path, auth, request){
+  return true
 }
 
-function route(type, path, request, auth){
-  let a
+function route(type, path, auth, request){
+  let hostlist
+  try{
+    hostlist = JSON.parse(fs.readFileSync("routes.json"));
+  } catch (e){
+    hostlist = JSON.parse(fs.readFileSync("routes.json.example"));
+  }
+  if (type in hostlist){
+    return hostlist[type] + path
+  } else if ('_default' in hostlist){
+    // if not, use _default
+    return hostlist['_default'] + request.originalUrl
+  } else {
+    // last try, maybe it's local
+    return request.originalUrl
+  }
 }
 
 
@@ -26,8 +33,35 @@ function route(type, path, request, auth){
 app.use("/", function(req, res){
   let type = req.originalUrl.split("/")[1]
   let path = req.originalUrl.split("/");
-  console.log(type)
-  console.log(path)
-  res.sendStatus(200)
+  let auth = req.headers.authorization;
+  // check auth
+  let is_authorized = checkAuth(type, path, auth, req)
+  // skip this check if told to
+  var skip_check = process.env.CHECK_HEADER=="no"
+  if (!skip_check && !auth) {
+    return res.status(401).json({ error: 'No authorization header set' });
+  }
+  // route
+  let url = route(type, path, auth, req)
+  options = {
+    uri: path,
+    encoding: null,
+    method: req.method,
+    resolveWithFullResponse: true
+  }
+  var resource = rp(options);
+  resource.then(response=>{
+    res.set(response.headers)
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.send(response.body)}
+  );
+  resource.catch(e=>{
+    res.set(e.response.headers)
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.status(500).send(decodeURIComponent(e.response.body))
+  })
 })
-app.listen(8081, () => console.log('Listening'));
+
+app.listen(4010, () => console.log('listening on 4010'))

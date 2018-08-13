@@ -2,7 +2,7 @@ async function bindaaasCheckAuth(type, path, auth, request){
   // TODO something to translate auth into user better than literal
   let user = auth.split(" ")[1];
   // TODO need a better method to do this
-  let slide = path.split("?")[1].split("=")[1];
+  let slide = getUrlParam("slide", path)
   // get current user's collections and slides
   let url = "ca-data:9099/services/caMicroscope/Authorization/query/getAuth?name=" + user
   options = {

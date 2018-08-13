@@ -4,6 +4,7 @@ const express = require('express')
 const rp = require('request-promise');
 const app = express();
 const fs = require("fs")
+const getUrlParam = require("./getUrlParam")
 
 // simple method which takes care of auth
 function checkAuthOff(type, path, auth, request, cb){

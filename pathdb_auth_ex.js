@@ -1,8 +1,8 @@
 async function pathdbCheckAuth(type, path, auth, request){
-  // forward auth header
-  let slide = path.split("?")[1].split("=")[1];
+  let slide = getUrlParam("slide", path)
   // get current user's collections and slides
-  let url = "ca-data:9099/services/caMicroscope/Authorization/query/getAuth?name=" + user
+  let url = "https://vinculum.bmi.stonybrookmedicine.edu/node/" + slide + "?_format=json"
+  // be sure to forward auth header
   options = {
     uri: url,
     encoding: null,

@@ -35,7 +35,7 @@ function route(type, path, auth, request){
 
 app.use("/", async function(req, res){
   let type = req.originalUrl.split("/")[1]
-  let path = req.originalUrl.split("/").slice(1).join("/");
+  let path = req.originalUrl.split("/").slice(2).join("/");
   let auth = req.headers.authorization;
   // check auth
   let is_authorized = await checkAuth(type, path, auth, req)

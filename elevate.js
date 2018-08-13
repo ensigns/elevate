@@ -46,7 +46,7 @@ app.use("/", function(req, res){
   // route
   let url = route(type, path, auth, req)
   options = {
-    uri: path,
+    uri: url,
     encoding: null,
     method: req.method,
     resolveWithFullResponse: true

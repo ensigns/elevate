@@ -5,10 +5,12 @@ const rp = require('request-promise');
 const app = express();
 const fs = require("fs")
 
-// This method should be deployment specific
-function checkAuth(type, path, auth, request){
+// simple method which takes care of auth
+function checkAuthOff(type, path, auth, request){
   return true
 }
+
+const checkAuth = require("./check_auth.js") || checkAuthOff
 
 function route(type, path, auth, request){
   let hostlist
@@ -38,7 +40,7 @@ app.use("/", function(req, res){
   let is_authorized = checkAuth(type, path, auth, req)
   // skip this check if told to
   var skip_check = process.env.CHECK_HEADER=="no"
-  if (!skip_check && !auth) {
+  if (!skip_check && !is_authorized) {
     return res.status(401).json({ error: 'No authorization header set' });
   }
   // route

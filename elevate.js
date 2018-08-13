@@ -7,8 +7,8 @@ const fs = require("fs")
 const getUrlParam = require("./getUrlParam")
 
 // simple method which takes care of auth
-function checkAuthOff(type, path, auth, request, cb){
-  cb(true)
+function checkAuthOff(type, path, auth, request){
+  return true
 }
 
 const checkAuth = require("./bindaas_auth.js") || checkAuthOff
@@ -35,7 +35,7 @@ function route(type, path, auth, request){
 
 app.use("/", async function(req, res){
   let type = req.originalUrl.split("/")[1]
-  let path = req.originalUrl.split("/");
+  let path = req.originalUrl.split("/").slice(1).join("/");
   let auth = req.headers.authorization;
   // check auth
   let is_authorized = await checkAuth(type, path, auth, req)

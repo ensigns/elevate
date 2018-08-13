@@ -1,7 +1,11 @@
 async function bindaaasCheckAuth(type, path, auth, request){
+  if (type=="viewer"){
+    return true
+  }
   // TODO something to translate auth into user better than literal
   let user = auth.split(" ")[1];
   // TODO need a better method to do this
+  // TODO need better auth checking depending on type
   let slide = getUrlParam("slide", path)
   // get current user's collections and slides
   let url = "ca-data:9099/services/caMicroscope/Authorization/query/getAuth?name=" + user

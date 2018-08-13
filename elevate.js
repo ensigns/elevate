@@ -11,7 +11,7 @@ function checkAuthOff(type, path, auth, request, cb){
   cb(true)
 }
 
-const checkAuth = require("./check_auth.js") || checkAuthOff
+const checkAuth = require("./bindaas_auth.js") || checkAuthOff
 
 function route(type, path, auth, request){
   let hostlist

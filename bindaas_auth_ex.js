@@ -1,26 +1,28 @@
-function checkAuth(type, path, auth, request){
-  console.log("hi")
-  return true
-}
-
 async function bindaaasCheckAuth(type, path, auth, request){
   // TODO something to translate auth into user better than literal
-  let user = auth;
-  let slide = path; // TODO get slide id
+  let user = auth.split(" ")[1];
+  // TODO need a better method to do this
+  let slide = path.split("?")[1].split("=")[1];
   // get current user's collections and slides
-  let url = "ca-data:9099/services/caMicroscope/Authorization/query/getAuth"
-  // if the requested slide is in authed, ok
+  let url = "ca-data:9099/services/caMicroscope/Authorization/query/getAuth?name=" + user
   options = {
     uri: url,
     encoding: null,
     method: req.method,
-    resolveWithFullResponse: true
+    resolveWithFullResponse: true,
+    json: true
   }
+  // get the slides and collections the user can see
   var auth = await rp(options);
-  // if not, check each of the collections recursively
-  functions isInCollectionList(slide, collectionList){
+  function isInCollectionList(slide, collectionList){
     return false
+    // not supporting collection level auth yet
+  }
+  if (slide in auth.slides){
+    return true
+  } else {
+    return isInCollectionList(slide, auth.collections)
   }
 }
 
-module.exports = checkAuth
+module.exports = bindaaasCheckAuth

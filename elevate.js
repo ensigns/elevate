@@ -6,8 +6,8 @@ const app = express();
 const fs = require("fs")
 
 // simple method which takes care of auth
-function checkAuthOff(type, path, auth, request){
-  return true
+function checkAuthOff(type, path, auth, request, cb){
+  cb(true)
 }
 
 const checkAuth = require("./check_auth.js") || checkAuthOff
@@ -32,15 +32,14 @@ function route(type, path, auth, request){
 
 
 
-app.use("/", function(req, res){
+app.use("/", async function(req, res){
   let type = req.originalUrl.split("/")[1]
   let path = req.originalUrl.split("/");
   let auth = req.headers.authorization;
   // check auth
-  let is_authorized = checkAuth(type, path, auth, req)
+  let is_authorized = await checkAuth(type, path, auth, req)
   // skip this check if told to
-  var skip_check = process.env.CHECK_HEADER=="no"
-  if (!skip_check && !is_authorized) {
+  if (!is_authorized) {
     return res.status(401).json({ error: 'No authorization header set' });
   }
   // route

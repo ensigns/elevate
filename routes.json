@@ -1,0 +1,6 @@
+{
+  "_default":"http://localhost:8000/",
+  "data":"http://ca-data:9099/",
+  "img":"http://ca-iip:4010/",
+  "viewer": "http://ca-front:80/"
+}

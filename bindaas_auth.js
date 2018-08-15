@@ -3,6 +3,9 @@ async function bindaaasCheckAuth(type, path, auth, request){
     return true
   }
   // TODO something to translate auth into user better than literal
+  if (!auth){
+    return false
+  }
   let user = auth.split(" ")[1];
   // TODO need a better method to do this
   // TODO need better auth checking depending on type
@@ -21,7 +24,10 @@ async function bindaaasCheckAuth(type, path, auth, request){
     json: true
   }
   // get the slides and collections the user can see
+
   var auth = await rp(options);
+  // PLEASE handle rejection in caller
+
   function isInCollectionList(slide, collectionList){
     return false
     // not supporting collection level auth yet

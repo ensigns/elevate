@@ -38,7 +38,12 @@ app.use("/", async function(req, res){
   let path = req.originalUrl.split("/").slice(2).join("/");
   let auth = req.headers.authorization;
   // check auth
-  let is_authorized = await checkAuth(type, path, auth, req)
+  try{
+    let is_authorized = await checkAuth(type, path, auth, req)
+  } catch(e){
+    console.warn(e)
+    res.status(500).send(decodeURIComponent(e))
+  }
   // skip this check if told to
   if (!is_authorized) {
     return res.status(401).json({ error: 'No authorization header set' });

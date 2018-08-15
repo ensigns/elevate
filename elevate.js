@@ -38,8 +38,9 @@ app.use("/", async function(req, res){
   let path = req.originalUrl.split("/").slice(2).join("/");
   let auth = req.headers.authorization;
   // check auth
+  var is_authorized
   try{
-    let is_authorized = await checkAuth(type, path, auth, req)
+    is_authorized = await checkAuth(type, path, auth, req)
   } catch(e){
     console.warn(e)
     res.status(500).send(decodeURIComponent(e))

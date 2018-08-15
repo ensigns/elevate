@@ -2,5 +2,6 @@
   "_default":"http://localhost:8000/",
   "data":"http://ca-data:9099/",
   "img":"http://ca-iip:4010/",
-  "viewer": "http://ca-front:80/"
+  "viewer": "http://ca-front:80/",
+  "dashboard": "http://ca-data:8080/"
 }

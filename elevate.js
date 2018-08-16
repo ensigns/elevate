@@ -47,7 +47,7 @@ app.use("/", async function(req, res){
   }
   // skip this check if told to
   if (!is_authorized) {
-    return res.status(401).json({ error: 'No authorization header set' });
+    return res.status(401).json({ error: 'Not Authorized' });
   }
   // route
   let url = route(type, path, auth, req)
@@ -65,10 +65,9 @@ app.use("/", async function(req, res){
     res.send(response.body)}
   );
   resource.catch(e=>{
-    res.set(e.response.headers)
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.status(500).send(decodeURIComponent(e.response.body))
+    res.status(500).send(e)
   })
 })
 

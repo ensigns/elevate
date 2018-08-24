@@ -1,5 +1,5 @@
 {
   "data":"http://ca-data:9099/",
-  "img":"http://ca-iip:4010/",
+  "img":"http://ca-iip:80/",
   "_default": "http://ca-front:80/"
 }

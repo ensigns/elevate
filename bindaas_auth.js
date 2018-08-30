@@ -11,12 +11,10 @@ async function bindaaasCheckAuth(type, path, auth, request){
   // TODO need a better method to auth user
 
   // get user
-  let url = "ca-data:9099/services/caMicroscope/Authorization/query/getAuth?name=" + user
+  let url = "http://ca-data:9099/services/caMicroscope/Authorization/query/getAuth?name=" + user
   options = {
     uri: url,
-    encoding: null,
     method: req.method,
-    resolveWithFullResponse: true,
     json: true
   }
 

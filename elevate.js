@@ -22,6 +22,20 @@ function route(type, path, auth, request){
     hostlist = JSON.parse(fs.readFileSync("routes.json.example"));
   }
   if (type in hostlist){
+    // special case for iip
+    if (type == "img"){
+      // translate path, then route
+      var url = "http://ca-data:9099/services/caMicroscope/Slide/query/get?id=" + getUrlParam('slide', path)
+      var options = {
+        uri: url,
+        method: "get",
+        json: true
+      }
+      var slide = await rp(options);
+      if (slide.location){
+        return hostlist['img']+ "/fcgi-bin/iipsrv.fcgi?DeepZoom=" + slide.location
+      }
+    }
     return hostlist[type] + path
   } else if ('_default' in hostlist){
     // if not, use _default

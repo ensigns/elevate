@@ -32,8 +32,16 @@ function route(type, path, auth, request){
         json: true
       }
       var slide = await rp(options);
-      if (slide.location){
-        return hostlist['img']+ "/fcgi-bin/iipsrv.fcgi?DeepZoom=" + slide.location
+      var location = slide.location
+      if (location){
+        var suffix = ""
+        // handle seeking files
+        else if(path.includes("_files"){
+          location = location.split(".dzi")[0]
+          suffix = "_files" + path.split("_files")[1]
+        })
+        // case where it's an img
+        return hostlist['img']+ "/fcgi-bin/iipsrv.fcgi?DeepZoom=" + location
       }
     }
     return hostlist[type] + path

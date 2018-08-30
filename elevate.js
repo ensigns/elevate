@@ -14,7 +14,7 @@ function checkAuthOff(type, path, auth, request){
 //const checkAuth = require("./bindaas_auth.js") || checkAuthOff
 const checkAuth = checkAuthOff; // for testing
 
-function route(type, path, auth, request){
+async function route(type, path, auth, request){
   let hostlist
   try{
     hostlist = JSON.parse(fs.readFileSync("routes.json"));
@@ -73,7 +73,7 @@ app.use("/", async function(req, res){
     return res.status(401).json({ error: 'Not Authorized' });
   }
   // route
-  let url = route(type, path, auth, req)
+  let url = await route(type, path, auth, req)
   options = {
     uri: url,
     encoding: null,

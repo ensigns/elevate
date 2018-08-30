@@ -36,10 +36,10 @@ async function route(type, path, auth, request){
       if (location){
         var suffix = ""
         // handle seeking files
-        if(path.includes("_files"){
+        if(path.includes("_files")){
           location = location.split(".dzi")[0]
           suffix = "_files" + path.split("_files")[1]
-        })
+        }
         // case where it's an img
         return hostlist['img']+ "/fcgi-bin/iipsrv.fcgi?DeepZoom=" + location + suffix
       }

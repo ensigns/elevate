@@ -22,26 +22,28 @@ async function route(type, path, auth, request){
     hostlist = JSON.parse(fs.readFileSync("routes.json.example"));
   }
   if (type in hostlist){
-    // special case for iip
-    if (type == "img"){
-      // translate path, then route
-      var url = "http://ca-data:9099/services/caMicroscope/Slide/query/get?id=" + getUrlParam('slide', path)
-      var options = {
-        uri: url,
-        method: "get",
-        json: true
-      }
-      var slide = await rp(options);
-      var location = slide[0].location
-      if (location){
-        var suffix = ""
-        // handle seeking files
-        if(path.includes("_files")){
-          location = location.split(".dzi")[0]
-          suffix = "_files" + path.split("_files")[1]
+    // special case for iip, if enabled
+    if (process.env.IIPMETHOD=="yes"){
+      if (type == "img"){
+        // translate path, then route
+        var url = "http://ca-data:9099/services/caMicroscope/Slide/query/get?id=" + getUrlParam('slide', path)
+        var options = {
+          uri: url,
+          method: "get",
+          json: true
         }
-        // case where it's an img
-        return hostlist['img']+ "fcgi-bin/iipsrv.fcgi?DeepZoom=" + location + suffix
+        var slide = await rp(options);
+        var location = slide[0].location
+        if (location){
+          var suffix = ""
+          // handle seeking files
+          if(path.includes("_files")){
+            location = location.split(".dzi")[0]
+            suffix = "_files" + path.split("_files")[1]
+          }
+          // case where it's an img
+          return hostlist['img']+ "fcgi-bin/iipsrv.fcgi?DeepZoom=" + location + suffix
+        }
       }
     }
     return hostlist[type] + path

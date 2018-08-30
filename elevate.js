@@ -32,7 +32,7 @@ async function route(type, path, auth, request){
         json: true
       }
       var slide = await rp(options);
-      var location = slide.location
+      var location = slide[0].location
       if (location){
         var suffix = ""
         // handle seeking files
@@ -41,7 +41,7 @@ async function route(type, path, auth, request){
           suffix = "_files" + path.split("_files")[1]
         }
         // case where it's an img
-        return hostlist['img']+ "/fcgi-bin/iipsrv.fcgi?DeepZoom=" + location + suffix
+        return hostlist['img']+ "fcgi-bin/iipsrv.fcgi?DeepZoom=" + location + suffix
       }
     }
     return hostlist[type] + path

@@ -6,6 +6,8 @@ const app = express();
 const fs = require("fs")
 const getUrlParam = require("./getUrlParam")
 
+app.use(express.json());
+
 // simple method which takes care of auth
 function checkAuthOff(type, path, auth, request){
   return true
@@ -81,6 +83,10 @@ app.use("/", async function(req, res){
     encoding: null,
     method: req.method,
     resolveWithFullResponse: true
+  }
+  if (req.method != "GET"){
+    options.body = req.body;
+    options.json = true;
   }
   var resource = rp(options);
   resource.then(response=>{

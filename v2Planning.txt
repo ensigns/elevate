@@ -1,0 +1,24 @@
+ELEVATE V2
+
+Record ID finding
+- a list of things that the record id could be called, in descending order
+
+Record ID Translation
+- something which can be resolved to the record
+
+Record ID Validation
+- Is the user authorized to do this
+
+Cache
+- Cache both record id translation and Validation
+
+Routing:
+{
+{rule: "_", base:"ca-viewer", disableCheck: true},
+{rule:"data", base:"ca-data:9099", keylist:["slide", "provenance.image.slide"]},
+{rule: "img", base:"ca-iip:80", keylist:["slide"], translate: {method: "ASK", url:"ca-data:9099/...", keyIn:"slide", keyOut:"location"}}
+}
+
+
+translate methods
+ASK -

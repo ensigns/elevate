@@ -1,5 +1,51 @@
 {
-  "data":"http://ca-data:9099/",
-  "img":"http://ca-iip:80/",
-  "_default": "http://ca-front:80/"
+  "root":"http://ca-front:80/",
+  "services":{
+    "data":{
+      "_base": "http://ca-data:9099/services/caMicroscope",
+      "Mark": {
+        "get":"/Mark/query/get",
+        "find":"/Mark/query/find",
+        "mutli":"/Mark/query/multiFind",
+        "post":"/Mark/submit/json",
+        "delete":"/Mark/delete/deleteMark"
+      },
+      "Overlay": {
+        "get":"/Overlay/query/get",
+        "find":"/Overlay/query/find",
+        "post":"/Overlay/submit/json",
+        "delete":"/Overlay/delete/deleteOverlay",
+        "update":"/Overlay/delete/updateOverlay"
+      },
+      "Slide": {
+        "get":"/Slide/query/get",
+        "find":"/Slide/query/find",
+        "post":"/Slide/submit/json",
+        "delete":"/Slide/delete/deleteSlide",
+        "update":"/Slide/delete/updateSlide"
+      },
+      "Template": {
+        "get":"/Template/query/get",
+        "find":"/Template/query/find",
+        "post":"/Template/submit/json",
+        "delete":"/Template/delete/deleteTemplate"
+      }
+    },
+    "img": {
+      "_base":"http://ca-iip/fcgi-bin/iipsrv.fcgi",
+      "Slide":{
+        "_resolver":{
+          "destination":"?DeepZoom={OUT}",
+          "url":"http://ca-data:9099/services/caMicroscope/Slide/query/get?id={IN}",
+          "field":"location",
+          "before":["_files", ".dzi"]
+        }
+      }
+    }
+  },
+  "keycheck": {
+    "field": "keys",
+    "url": "http://ca-data:9099/services/caMicroscope/Auth/query/get?user={USER}",
+    "passIfMissing": "true"
+  }
 }

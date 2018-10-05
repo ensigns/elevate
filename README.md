@@ -1,22 +1,35 @@
-# elevate
-Gateway and proxy which asks another server or resource for authorization
+# caMicroscope Security and Router Container
 
-## Usage
-A request to <this server>/data/get?id=apple is split into a type (data) and a path (get?id=apple). The server associated with the route for data then gets <that server>/get?id=apple as a request.
+This is intended for use with a docker deployment, or a deployment behind a reverse proxy. All requests should be directed through this service or container.
 
-## Setup
-First, set up routes.json. This should have each type associated with a host, and optionally a "\_default" attribute. If no type is met, it will then route the full url to the host specified.
+## Configuration
 
-This tool is especially set up to check for authorization, but this is deployment specific so far, so it requires tinkering. In elevate.js, see the checkAuth function.
+### routes.json
 
-The checkAuth function, out of the box, always returns true, but it should be replaced, if desired, with a check that the resource requested is authorized. For  the <this server>/data/get?id=apple example, this method may know that we can ask another server, <auth server>/users/<uid>/fruit to see which fruit that user can see, and check if apple is among the list.
+Use routes.json to expose specific routes. If no match is found, it tries to use the provided root, if specified.
+Under services, should be each top level service. Each service has a \_base for common elements of the urls (e.g. container name), \_public set to true to avoid key checks, and named resource objects, which in turn have methods. Methods either have the rest of the url, or a resolver (see "Resolvers")
 
-## Use with Docker
-This tool is intended to be used as a single exposed container in a docker deployment. The other containers should be networked to this container, but not otherwise accessible to outside requests.
-
-## Disclaimer
-I have yet to do any good testing on how secure this method is, so consider it a prototype, not production ready quite yet.
+Of course, the nomenclature chosen may not match configuration, but the important thing to note is that requests, outside of those directed at the root service, should be in the form https://<url base>/service/resource/method.
 
 
-## IIP Special Case
-There's a special case for iip for use with bindaas, set IIPMETHOD=yes to use
+### enviornment variables
+
+As of now, two settings may be changed with enviornment variables:
+
+SECRET - the secret for JWT checks
+DISABLE_SEC - set to true to skip all auth checks regardless of if public is set. Designed for cert/testing.
+
+### Resolvers
+Resolvers are set by setting the "method" level to "\_resolver"-- the actual input to the method is then stored as {IN}
+
+destination - what to use as the method url, after {OUT} substitution,
+url - the url to check
+field - the field in the response to assign to {OUT}
+before - a string or list of strings to get the variable before; if multiple match, the first match is used
+after - a string or list of strings to get the variable after; if multiple match, the first match is used
+
+### Keycheck
+!!!! Keycheck is not yet implemented, but part of a potential concept for later
+
+Checks if a named field is present in both the users permissions and the document
+If passIfMissing is truthy, it will return a document with no such field

@@ -16,3 +16,7 @@ This tool is intended to be used as a single exposed container in a docker deplo
 
 ## Disclaimer
 I have yet to do any good testing on how secure this method is, so consider it a prototype, not production ready quite yet.
+
+
+## IIP Special Case
+There's a special case for iip for use with bindaas, set IIPMETHOD=yes to use

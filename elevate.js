@@ -5,8 +5,7 @@ const app = express();
 const fs = require("fs")
 const getUrlParam = require("./getUrlParam")
 var jwt = require('jsonwebtoken');
-
-app.use(express.json());
+var proxy = require('http-proxy-middleware');
 
 var SECRET = process.env.SECRET
 var DISABLE_SEC = process.env.DISABLE_SEC || false
@@ -14,7 +13,6 @@ var DISABLE_SEC = process.env.DISABLE_SEC || false
 var PORT = process.env.PORT || 4010
 
 let RESOLVER_CACHE = {}
-
 
 let loading_config
 try {
@@ -24,12 +22,31 @@ try {
 }
 const config = loading_config;
 
-// Sessions
-// CACHE Resolvers
-// CACHE Keys, put in session
+const getToken = function(req) {
+    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') { // Authorization: Bearer g1jipjgi1ifjioj
+        // Handle token presented as a Bearer token in the Authorization header
+        return req.headers.authorization.split(' ')[1];
+    } else if (req.query && req.query.token) {
+        // Handle token presented as URI param
+        return req.query.token;
+    } else if (req.cookies && req.cookies.token) {
+        // Handle token presented as a cookie parameter
+        return req.cookies.token;
+    }
+}
 
-// route for user - get username given auth header
-// route for login - get header given good login
+// handle non-json raw body for post
+app.use(function(req, res, next) {
+    var data = '';
+    req.setEncoding(null);
+    req.on('data', function(chunk) {
+        data += chunk;
+    });
+    req.on('end', function() {
+        req.rawBody = data;
+        next();
+    });
+});
 
 // this method takes in the original url and config to resolve which url to ask for
 async function resolve(url, config) {
@@ -124,77 +141,78 @@ async function useResolver(method, rule) {
 
 }
 
-const getToken = function(req) {
-    if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') { // Authorization: Bearer g1jipjgi1ifjioj
-        // Handle token presented as a Bearer token in the Authorization header
-        return req.headers.authorization.split(' ')[1];
-    } else if (req.query && req.query.token) {
-        // Handle token presented as URI param
-        return req.query.token;
-    } else if (req.cookies && req.cookies.token) {
-        // Handle token presented as a cookie parameter
-        return req.cookies.token;
+// handle jwt
+app.use(function(req, res, next){
+    req.verified = false;
+    req.jwt_err = "Uninitialized JWT Error";
+    if (DISABLE_SEC) {
+        req.verified = true
+        req.jwt_err = "Security Disabled";
+        next()
+    } else {
+        jwt.verify(getToken(req), SECRET, function(err, decoded) {
+            if (err) {
+                console.log(err)
+                req.jwt_err = err
+                next()
+            } else {
+                console.log(decoded)
+                req.jwt_data = decoded
+                req.verified = true
+                next()
+            }
+        });
     }
-}
+})
 
-app.use("/", function(req, res) {
-    // normal behavior
-    let resolveProm = resolve(req.originalUrl, config)
-    resolveProm.then(x => {
-        console.log(x)
-        let verified = false;
-        let jwt_err = "Uninitialized JWT Error";
-        if (DISABLE_SEC) {
-            verified = true
-            let jwt_err = "Security Disabled";
-        } else {
-            jwt.verify(getToken(req), SECRET, function(err, decoded) {
-                if (err) {
-                    console.log(err)
-                    jwt_err = err
-                } else {
-                    console.log(decoded)
-                    verified = true
-                }
-            });
-        }
-        if (x.public || verified) {
-            options = {
-                uri: x.url,
-                encoding: null,
-                method: req.method,
-                resolveWithFullResponse: true
-            }
-            if (req.method != "GET") {
-                options.body = req.body;
-                options.json = true;
-            }
-            var resource = rp(options);
-            resource.then(response => {
-                res.set(response.headers)
-                res.header("Access-Control-Allow-Origin", "*");
-                res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                res.send(response.body)
-            });
-            resource.catch(e => {
-                res.header("Access-Control-Allow-Origin", "*");
-                res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-                let statusCode = e.statusCode || 500
-                let body =  e.data
-                body = e.response.body.toString()
-                res.status(statusCode).send(body)
-            })
+// handle resolver
+app.use(function(req, res, next){
+    resolve(req.originalUrl, config).then(x=>{
+        req.new_url = x.url
+        req.is_public = x.public
+        next()
+    }).catch(e=>{
+        req.resolve_failed = true
+        req.resolve_err = e
+        next()
+    });
+});
+
+// handle breaking errors thusfar
+app.use(function(req, res, next){
+    if (req.resolve_failed){
+        res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        let statusCode = req.resolve_err.statusCode || 500
+        let body =  req.resolve_err.error.toString()
+        res.status(statusCode).send(body)
+    } else {
+        if (req.verified){
+            next()
         } else {
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-            res.status(401).send(jwt_err)
+            res.status(401).send(req.jwt_err)
         }
-    })
-    resolveProm.catch(e => {
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        res.status(500).send(e)
-    })
+    }
 })
+
+// handle the proxy routes themselves
+app.use("/", function(req, res, next) {
+    proxy({
+      onError(err, req, res) { res.status(500).send(err)},
+      changeOrigin: true,
+      target:req.new_url.split("/").slice(0,3).join("/"),
+      pathRewrite: function (path, req) {return req.new_url.split("/").slice(3).join("/") },
+      onProxyReq: function (proxyReq, req, res){
+        if (req.method == "POST"){
+          console.log(req.rawBody.length)
+          proxyReq.write( req.rawBody );
+          proxyReq.end();
+        }
+      }
+    })(req, res, next)
+})
+
 
 app.listen(PORT, () => console.log('listening on ' + PORT))

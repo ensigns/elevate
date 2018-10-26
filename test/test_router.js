@@ -17,6 +17,7 @@ describe('Router User Access Checks', function () {
   // can we see it in find
   it('Works for public route', function (done) {
     fetch(public_url).then(x=>x.json()).then(x=>{
+      console.log(x)
       assert.equal(x.status, "OK", "Works ok")
       done()
     }).catch(e=>{
@@ -27,6 +28,7 @@ describe('Router User Access Checks', function () {
   it('Fails for private route without auth', function (done) {
     // test without jwt, nonpublic - error
     fetch(private_url).then(x=>x.json()).then(x=>{
+      console.log(x)
       assert.notEqual(x.status,"OK", "Correctly did not route")
       done()
     }).catch(e=>{
@@ -37,6 +39,7 @@ describe('Router User Access Checks', function () {
   it('works for private route with correct auth', function (done) {
     // test with jwt, public - should be ok
     fetch(private_url, {headers: {"Authorization": "Bearer " + jwt}}).then(x=>x.json()).then(x=>{
+      console.log(x)
       assert.equal(x.status, "OK", "Works ok")
       done()
     }).catch(e=>{
@@ -48,6 +51,7 @@ describe('Router User Access Checks', function () {
     // wrong jwt should not work
     this.timeout(10000)
     fetch(private_url, {headers: {"Authorization": "Bearer " + wrong_user_jwt}}).then(x=>x.json()).then(x=>{
+      console.log(x)
       assert.notEqual(x.status,"OK", "Correctly did not route")
       done()
     }).catch(e=>{
@@ -58,6 +62,7 @@ describe('Router User Access Checks', function () {
   it('fails for private route with wrong verification secret', function (done) {
     // wrong jwt should not work
     fetch(private_url, {headers: {"Authorization": "Bearer " + faked_jwt}}).then(x=>x.text()).then(x=>{
+      console.log(x)
       assert.notEqual(x.status,"OK", "Correctly did not route")
       done()
     }).catch(e=>{

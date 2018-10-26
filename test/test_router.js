@@ -7,7 +7,7 @@ var jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWlj
 var wrong_user_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.yaa_qazSR7uAfg3sqxsJvcnOq2fqWb_R50Vz6xoMdKo"
 var faked_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.C4kyd1e30G-noF1WkZibJQxuiJ43CCUpPWj7XnfcB7Q"
 
-var base = "http://localhost:4011"
+var base = "http://localhost:4010"
 
 var public_url = base + "/public/test/test"
 var private_url = base + "/private/test/test"

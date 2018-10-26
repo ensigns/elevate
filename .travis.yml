@@ -12,7 +12,7 @@ before_script:
   - mv test/routes.json routes.json
   - http-server -s -p 8000 &
   - export SECRET="camic"
-  - node elevate.js
+  - node elevate.js &
 
 script:
 - mocha test/test_router.js --exit

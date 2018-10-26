@@ -17,5 +17,6 @@ before_script:
   - export PORT=4010
 
 script:
-- npm start
+- npm start &
+- sleep 10
 - npm test

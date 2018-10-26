@@ -11,13 +11,12 @@ install:
 before_script:
   - rm routes.json
   - mv test/routes.json routes.json
-  -
   - sleep 5
   - export SECRET="camic"
   - export PORT=4010
 
 script:
-- cd test && http-server -s -p 8000 && cd ../
+- cd test; http-server -s -p 8000& ; cd ../
 - npm start &
 - sleep 10
 - npm test

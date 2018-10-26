@@ -2,13 +2,13 @@
   "name": "elevate",
   "version": "1.0.0",
   "description": "Gateway which asks another server or resource for authorization ",
-  "main": "elevate.js",
+  "main": "router.js",
   "scripts": {
     "test": "node tests.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ensigns/elevate.git"
+    "url": "git+https://github.com/caMicroscope/security.git"
   },
   "keywords": [
     "auth",
@@ -17,11 +17,16 @@
   "author": "birm",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/ensigns/elevate/issues"
+    "url": "https://github.com/caMicroscope/security/issues"
   },
-  "homepage": "https://github.com/ensigns/elevate#readme",
+  "homepage": "https://github.com/caMicroscope/security#readme",
   "dependencies": {
     "express": "^4.16.3",
+    "express-http-proxy": "^1.4.0",
+    "http-proxy": "^1.17.0",
+    "http-proxy-middleware": "^0.19.0",
+    "jsonwebtoken": "^8.3.0",
+    "passport-openidconnect": "0.0.2",
     "request": "^2.87.0",
     "request-promise": "^4.2.2"
   }

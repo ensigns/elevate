@@ -4,11 +4,10 @@
     "data":{
       "_base": "http://ca-data:9099/services/caMicroscope",
       "Mark": {
-        "get":"/Mark/query/get",
-        "find":"/Mark/query/find",
-        "mutli":"/Mark/query/multiFind",
-        "post":"/Mark/submit/json",
-        "delete":"/Mark/delete/deleteMark"
+        "get":"/mark/query/get",
+        "find":"/mark/query/find",
+        "post":"/mark/submit/json",
+        "delete":"/mark/delete/deleteMark"
       },
       "Overlay": {
         "get":"/Overlay/query/get",
@@ -34,9 +33,9 @@
     "img": {
       "_base":"http://ca-iip/fcgi-bin/iipsrv.fcgi",
       "Slide":{
-        "_resolver":{
+        "get":{
           "destination":"?DeepZoom={OUT}",
-          "url":"http://ca-data:9099/services/caMicroscope/Slide/query/get?id={IN}",
+          "url":"http://ca-data:9099/services/caMicroscope/Slide/query/get?slide={IN}",
           "field":"location",
           "before":["_files", ".dzi"]
         }

@@ -6,4 +6,4 @@ WORKDIR /root/src
 RUN npm install
 RUN npm install -g nodemon
 EXPOSE 4010
-CMD nodemon elevate.js -w ./
+CMD nodemon router.js -w ./

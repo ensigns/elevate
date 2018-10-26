@@ -1,0 +1,19 @@
+sudo: required
+language: node_js
+node_js:
+   - "8"
+install:
+    - npm install
+    - npm install -g http-server
+    - npm install node-fetch
+
+before_script:
+  - rm routes.json
+  - mv test/routes.json routes.json
+  - http-server -s -p 8000 & # start a Web server
+  - sleep 3 # give Web server some time to bind to sockets, etc
+  - export SECRET="camic"
+  - node router.js
+
+script:
+- mocha test/test_router.js --exit

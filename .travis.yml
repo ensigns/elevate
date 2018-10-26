@@ -15,7 +15,8 @@ before_script:
   - sleep 5
   - export SECRET="camic"
   - export PORT=4010
-  - node elevate.js &
+
 
 script:
+- node elevate.js &
 - mocha test/test_router.js --exit

@@ -6,6 +6,7 @@ install:
     - npm install
     - npm install -g http-server
     - npm install node-fetch
+    - npm install -g mocha
 
 before_script:
   - rm routes.json

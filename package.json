@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "Gateway which asks another server or resource for authorization ",
   "main": "elevate.js",
-  "scripts": {
-    "test": "mocha test/test_router.js --exit"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/caMicroscope/security.git"
@@ -20,7 +17,8 @@
     "url": "https://github.com/caMicroscope/security/issues"
   },
   "scripts": {
-    "start": "node elevate.js"
+    "start": "node elevate.js",
+    "test": "mocha test/*.js --exit"
   },
   "homepage": "https://github.com/caMicroscope/security#readme",
   "dependencies": {

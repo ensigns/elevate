@@ -2,9 +2,9 @@
   "name": "elevate",
   "version": "1.0.0",
   "description": "Gateway which asks another server or resource for authorization ",
-  "main": "router.js",
+  "main": "elevate.js",
   "scripts": {
-    "test": "node tests.js"
+    "test": "mocha test/test_router.js --exit"
   },
   "repository": {
     "type": "git",

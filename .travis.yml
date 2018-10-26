@@ -16,7 +16,6 @@ before_script:
   - export SECRET="camic"
   - export PORT=4010
 
-
 script:
-- node elevate.js &
-- mocha test/test_router.js --exit
+- npm start
+- npm test

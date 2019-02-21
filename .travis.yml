@@ -9,15 +9,14 @@ install:
     - npm install -g mocha
 
 before_script:
-  - rm routes.json
   - mv test/routes.json routes.json
   - export SECRET="camic"
   - export PORT=4010
-
 script:
 - cd test
 - http-server -s -p 8000 &
 - cd ../
+- node test/auth_service/app.js &
 - sleep 5
 - npm start &
 - sleep 10

@@ -1,8 +1,6 @@
-# elevate Security and Router Container
+# Elevate Security and Router Container
 
 This is intended for use with a docker deployment, or a deployment behind a reverse proxy. All requests should be directed through this service or container.
-
-This tool was developed with a focus for caMicroscope, but it should be useful in other contexts.
 
 ## Configuration
 
@@ -19,10 +17,12 @@ This tool does not directly keep track of users, but it provides a framework to 
 In routes.json, add an "auth" section with the following configuration options.
 
 
-source - The field in the decoded JWT to set to {USER}
-destination - The url to call to determine if the user has permission, and get the keychain if applicable.
-keychain - The keys the user has, if applicable. See the Keycheck section of this document.
-check - the field to check; if the response from destination has and has a truthy value in this field, it will consider the user "ok".
+elevate_url - the url to do a check against - the jwt is passed as an auth bearer token
+elevate_ok - the method to use to determine a auth check is ok
+attr_suffix - if a route attr check is to be done, what do we append to the url?
+
+#### attributes
+A specific route can be assigned an attribute regarding its access ("attr"). If an attr is present on a route, it's routed if and only if the user check for that attr returns okay.
 
 ### enviornment variables
 

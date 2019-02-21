@@ -9,6 +9,7 @@ var proxy = require('http-proxy-middleware');
 
 var SECRET = process.env.SECRET
 var DISABLE_SEC = process.env.DISABLE_SEC || false
+var REDIRECT = process.env.REDIRECT || false
 
 var PORT = process.env.PORT || 4010
 
@@ -58,6 +59,7 @@ async function resolve(url, config) {
     }
     let outUrl = ""
     let ispublic = false
+    let attr = undefined
     // check if exists first
     let serviceList = config.services
     let hasMethod = serviceList.hasOwnProperty(service) && serviceList[service].hasOwnProperty(type) && serviceList[service][type].hasOwnProperty(method);
@@ -66,9 +68,12 @@ async function resolve(url, config) {
         ispublic = serviceList[service]["_public"] || false
         outUrl += serviceList[service]["_base"] || ""
         if (isResolver) {
+            attr = serviceList[service][type]["_resolver"].attr
             outUrl += await useResolver(method, serviceList[service][type]["_resolver"])
         } else {
-            outUrl += serviceList[service][type][method] || ""
+            // does this have an attribute
+            attr = serviceList[service][type][method].attr
+            outUrl += serviceList[service][type][method]['path'] || serviceList[service][type][method] || ""
         }
         // handle lingering method url params
         if (url.split("/")[3].split("?").length >= 2){
@@ -85,7 +90,8 @@ async function resolve(url, config) {
     }
     return {
         url: outUrl,
-        public: ispublic
+        public: ispublic,
+        attr: attr
     }
 }
 
@@ -166,34 +172,30 @@ app.use(function(req, res, next){
 
 // handle auth given jwt decoded
 app.use(function(req, res, next){
-    if (DISABLE_SEC || !config.hasOwnProperty("auth") || req.is_public){
+    if (DISABLE_SEC || !config.hasOwnProperty("auth")){
       // user managment not set up or security is entirely disabled
       // also, don't break on public routers
       req.userid = "UNSPECIFIED"
       req.user_ok = true
-      req.keychain = []
       next()
+      // if the JWT is ok
     } else if (req.verified) {
+      var check_url = config.auth.elevate_url
+      // no elevate url means all valid tokens are ok
       usercheck = rp({
-        uri: config.auth.destination.split("{USER}").join(req.jwt_data[config.auth.source]),
-        json: true
+        uri: config.auth.elevate_url,
+        headers: {authorization: "Bearer " + getToken(req)}
       })
       usercheck.then(x=>{
-        // TODO handle if check config is a dot item
-        if (config.auth.hasOwnProperty("keychain")){
-          req.keychain = x[config.auth.keychain]
-        } else {
-          req.keychain = []
-        }
-        if (x.hasOwnProperty(config.auth.check) && x[config.auth.check]){
-          req.userid = req.jwt_data[config.auth.source]
+        if (config.auth.elevate_ok.mode == "status"){
+          // rp should only be ok where 2xx by documentation, so then means we're ok
           req.user_ok = true
-          next()
         } else {
+          // unsupported
           req.user_ok = false
-          req.jwt_err= {"error": "User not authorized"}
-          next()
+          req.jwt_err= {"error": "user auth method unsupported"}
         }
+        next()
       }).catch(e=>{
         // failure to get the url is ALSO failure to auth
         req.user_ok = false
@@ -212,6 +214,7 @@ app.use(function(req, res, next){
     resolve(req.originalUrl, config).then(x=>{
         req.new_url = x.url
         req.is_public = x.public
+        req.attr = x.attr
         next()
     }).catch(e=>{
         req.resolve_failed = true
@@ -219,6 +222,36 @@ app.use(function(req, res, next){
         next()
     });
 });
+
+
+
+// attribute check
+app.use(function(req, res, next){
+  if (DISABLE_SEC){
+    req.attr_ok = true
+    next()
+  }
+  else if (config.hasOwnProperty("auth") && req.attr && config.auth.elevate_url){
+    var attr_suffix = config.auth.attr_suffix || "?attr="
+    usercheck = rp({
+      uri: config.auth.elevate_url + attr_suffix + req.attr,
+      headers: {authorization: "Bearer " + getToken(req)}
+    })
+    usercheck.then(x=>{
+      req.attr_ok = true
+      next()
+    }).catch(e=>{
+      // failure to get the url is ALSO failure to auth
+      req.attr_ok = false
+      req.jwt_err= "User not authorized for " + req.attr
+      next()
+    })
+  } else {
+    req.attr_ok = true
+    next()
+  }
+
+})
 
 // handle breaking errors thusfar
 app.use(function(req, res, next){
@@ -229,12 +262,17 @@ app.use(function(req, res, next){
         let body =  req.resolve_err.error.toString()
         res.status(statusCode).send({"error":body})
     } else {
-        if (req.user_ok || req.is_public){
+        if ((req.attr_ok && req.user_ok) || req.is_public){
             next()
         } else {
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-            res.status(401).send(req.jwt_err)
+            if (REDIRECT){
+                res.status(401).redirect(REDIRECT);
+            }
+            else {
+                res.status(401).send({"error":req.jwt_err})
+            }
         }
     }
 })

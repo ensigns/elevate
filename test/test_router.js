@@ -11,6 +11,7 @@ var base = "http://localhost:4010"
 
 var public_url = base + "/public/test/test"
 var private_url = base + "/private/test/test"
+var super_url = base + "/private/test/super"
 
 // test without jwt, public - should be ok
 describe('Router User Access Checks', function () {
@@ -61,7 +62,29 @@ describe('Router User Access Checks', function () {
   })
   it('fails for private route with wrong verification secret', function (done) {
     // wrong jwt should not work
-    fetch(private_url, {headers: {"Authorization": "Bearer " + faked_jwt}}).then(x=>x.text()).then(x=>{
+    fetch(private_url, {headers: {"Authorization": "Bearer " + faked_jwt}}).then(x=>x.json()).then(x=>{
+      console.log(x)
+      assert.notEqual(x.status,"OK", "Correctly did not route")
+      done()
+    }).catch(e=>{
+      console.log(e)
+      done(e)
+    })
+  })
+  it('succeeds for super route with super user', function (done) {
+    // wrong jwt should not work
+    fetch(super_url, {headers: {"Authorization": "Bearer " + jwt}}).then(x=>x.json()).then(x=>{
+      console.log(x)
+      assert.equal(x.status,"OK", "Lets user through")
+      done()
+    }).catch(e=>{
+      console.log(e)
+      done(e)
+    })
+  })
+  it('fails for super route with non super user', function (done) {
+    // wrong jwt should not work
+    fetch(super_url, {headers: {"Authorization": "Bearer " + wrong_user_jwt}}).then(x=>x.json()).then(x=>{
       console.log(x)
       assert.notEqual(x.status,"OK", "Correctly did not route")
       done()

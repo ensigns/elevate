@@ -4,6 +4,6 @@ COPY . /root/src
 WORKDIR /root/src
 
 RUN npm install
-RUN npm install -g nodemon
-EXPOSE 4010
-CMD nodemon elevate.js -w ./
+RUN npm install -g forever
+EXPOSE 8010
+CMD forever app.js

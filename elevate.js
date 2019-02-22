@@ -6,6 +6,7 @@ const fs = require("fs")
 const getUrlParam = require("./getUrlParam")
 var jwt = require('jsonwebtoken');
 var proxy = require('http-proxy-middleware');
+const https = require('https')
 
 var SECRET = process.env.SECRET
 var DISABLE_SEC = process.env.DISABLE_SEC || false
@@ -14,6 +15,21 @@ var REDIRECT = process.env.REDIRECT || false
 var PORT = process.env.PORT || 4010
 
 let RESOLVER_CACHE = {}
+var HTTPS_MODE = false
+var https_options = {}
+// HTTPS IF AVALIABLE
+try {
+  let pk_path = "./ssl/privatekey.pem"
+  let cert_path = "./ssl/certificate.pem"
+  if (fs.existsSync(pk_path) && fs.existsSync(cert_path)) {
+    HTTPS_MODE = true
+    console.info("https mode")
+    https_options.key = fs.readFileSync(pk_path, 'utf8')
+    https_options.cert = fs.readFileSync(cert_path, 'utf8')
+  }
+} catch(err) {
+  console.error(err)
+}
 
 let loading_config
 try {
@@ -259,9 +275,10 @@ app.use(function(req, res, next){
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         let statusCode = req.resolve_err.statusCode || 500
-        let body =  req.resolve_err.error.toString()
+        let body = req.resolve_err.error.toString()
         res.status(statusCode).send({"error":body})
     } else {
+        console.log("public check", req.is_public)
         if ((req.attr_ok && req.user_ok) || req.is_public){
             next()
         } else {
@@ -294,5 +311,8 @@ app.use("/", function(req, res, next) {
     })(req, res, next)
 })
 
-
-app.listen(PORT, () => console.log('listening on ' + PORT))
+if (HTTPS_MODE){
+  https.createServer(https_options, app).listen(PORT, () => console.log('listening HTTPS on ' + PORT));
+} else {
+  app.listen(PORT, () => console.log('listening on ' + PORT))
+}

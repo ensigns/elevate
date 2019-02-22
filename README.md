@@ -4,6 +4,10 @@ This is intended for use with a docker deployment, or a deployment behind a reve
 
 ## Configuration
 
+### SSL
+
+To enable ssl, mount the private key and certificate files to ssl/privatekey.pem and ssl/certificate.pem respectively. HTTPS mode will only be enabled if both of these files are present. 
+
 ### routes.json
 
 Use routes.json to expose specific routes. If no match is found, it tries to use the provided root, if specified.

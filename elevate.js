@@ -222,10 +222,7 @@ app.use(function(req, res, next){
   }
   else if (config.hasOwnProperty("auth") && req.attr && config.auth.permissions_field){
     let ok_attrs = req.jwt_data[config.auth.permissions_field] || []
-    console.log(ok_attrs)
-    console.log(ok_attrs.__proto__)
-    console.log("pay attention here")
-    if (req.attr in ok_attrs){
+    if (ok_attrs.includes(req.attr)){
       req.attr_ok = true
     } else {
       req.jwt_err = "User lacks permission for " + req.attr + ", has: " + ok_attrs

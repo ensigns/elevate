@@ -1,7 +1,7 @@
 {
   "root":"http://localhost:8000/",
   "auth":{
-    "permissions_field":"attrs",
+    "permissions_field":"attrs"
   },
   "services":{
     "private":{

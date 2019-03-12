@@ -228,6 +228,7 @@ app.use(function(req, res, next){
     if (req.attr in ok_attrs){
       req.attr_ok = true
     } else {
+      req.jwt_err = "User lacks permission for " + req.attr + ", has: " + ok_attrs
       req.attr_ok = false
     }
     next()

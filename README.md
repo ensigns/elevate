@@ -6,7 +6,7 @@ This is intended for use with a docker deployment, or a deployment behind a reve
 
 ### SSL
 
-To enable ssl, mount the private key and certificate files to ssl/privatekey.pem and ssl/certificate.pem respectively. HTTPS mode will only be enabled if both of these files are present. 
+To enable ssl, mount the private key and certificate files to ssl/privatekey.pem and ssl/certificate.pem respectively. HTTPS mode will only be enabled if both of these files are present.
 
 ### routes.json
 
@@ -21,9 +21,9 @@ This tool does not directly keep track of users, but it provides a framework to 
 In routes.json, add an "auth" section with the following configuration options.
 
 
-elevate_url - the url to do a check against - the jwt is passed as an auth bearer token
-elevate_ok - the method to use to determine a auth check is ok
-attr_suffix - if a route attr check is to be done, what do we append to the url?
+permissions_field - the field in the given jwt to check for permission attributes; expects a list.
+
+(more configuration may be added soon)
 
 #### attributes
 A specific route can be assigned an attribute regarding its access ("attr"). If an attr is present on a route, it's routed if and only if the user check for that attr returns okay.

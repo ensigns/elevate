@@ -1,9 +1,7 @@
 {
   "root":"http://localhost:8000/",
   "auth":{
-    "elevate_url": "http://localhost:8010/check",
-    "elevate_ok":{"mode": "status"},
-    "attr_suffix": "?attr="
+    "permissions_field":"attrs",
   },
   "services":{
     "private":{

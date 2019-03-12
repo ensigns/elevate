@@ -8,7 +8,7 @@ var jwt = require('jsonwebtoken');
 var proxy = require('http-proxy-middleware');
 const https = require('https')
 
-var SECRET = process.env.SECRET
+var PUBKEY = process.env.PUBKEY
 var DISABLE_SEC = process.env.DISABLE_SEC || false
 var REDIRECT = process.env.REDIRECT || false
 
@@ -19,15 +19,24 @@ var HTTPS_MODE = false
 var https_options = {}
 // HTTPS IF AVALIABLE
 try {
-  let pk_path = "./ssl/privatekey.pem"
-  let cert_path = "./ssl/certificate.pem"
-  if (fs.existsSync(pk_path) && fs.existsSync(cert_path)) {
+  let ssl_pk_path = "./ssl/privatekey.pem"
+  let ssl_cert_path = "./ssl/certificate.pem"
+  if (fs.existsSync(ssl_pk_path) && fs.existsSync(ssl_cert_path)) {
     HTTPS_MODE = true
     console.info("https mode")
-    https_options.key = fs.readFileSync(pk_path, 'utf8')
-    https_options.cert = fs.readFileSync(cert_path, 'utf8')
+    https_options.key = fs.readFileSync(ssl_pk_path, 'utf8')
+    https_options.cert = fs.readFileSync(ssl_cert_path, 'utf8')
   }
 } catch(err) {
+  console.error(err)
+}
+
+try {
+  let pubkey_path = "/keys/key.pub"
+  if(fs.existsSync(pubkey_path)){
+    var PUBKEY = fs.readFileSync(ssl_pk_path, 'utf8')
+  }
+} catch (err){
   console.error(err)
 }
 
@@ -173,54 +182,18 @@ app.use(function(req, res, next){
         req.jwt_err = "Security Disabled";
         next()
     } else {
-        jwt.verify(getToken(req), SECRET, function(err, decoded) {
+        jwt.verify(getToken(req), PUBKEY, function(err, decoded) {
             if (err) {
                 req.jwt_err = err
+                req.user_ok = false
                 next()
             } else {
                 req.jwt_data = decoded
                 req.verified = true
+                req.user_ok=true
                 next()
             }
         });
-    }
-})
-
-// handle auth given jwt decoded
-app.use(function(req, res, next){
-    if (DISABLE_SEC || !config.hasOwnProperty("auth")){
-      // user managment not set up or security is entirely disabled
-      // also, don't break on public routers
-      req.userid = "UNSPECIFIED"
-      req.user_ok = true
-      next()
-      // if the JWT is ok
-    } else if (req.verified) {
-      var check_url = config.auth.elevate_url
-      // no elevate url means all valid tokens are ok
-      usercheck = rp({
-        uri: config.auth.elevate_url,
-        headers: {authorization: "Bearer " + getToken(req)}
-      })
-      usercheck.then(x=>{
-        if (config.auth.elevate_ok.mode == "status"){
-          // rp should only be ok where 2xx by documentation, so then means we're ok
-          req.user_ok = true
-        } else {
-          // unsupported
-          req.user_ok = false
-          req.jwt_err= {"error": "user auth method unsupported"}
-        }
-        next()
-      }).catch(e=>{
-        // failure to get the url is ALSO failure to auth
-        req.user_ok = false
-        req.jwt_err= {"error": "User not authorized"}
-        next()
-      })
-    } else {
-      req.user_ok = false
-      next()
     }
 })
 
@@ -247,21 +220,14 @@ app.use(function(req, res, next){
     req.attr_ok = true
     next()
   }
-  else if (config.hasOwnProperty("auth") && req.attr && config.auth.elevate_url){
-    var attr_suffix = config.auth.attr_suffix || "?attr="
-    usercheck = rp({
-      uri: config.auth.elevate_url + attr_suffix + req.attr,
-      headers: {authorization: "Bearer " + getToken(req)}
-    })
-    usercheck.then(x=>{
+  else if (config.hasOwnProperty("auth") && req.attr && config.auth.permissions_field){
+    let ok_attrs = req.jwt_data[config.auth.permissions_field] || []
+    if (req.attr in ok_attrs){
       req.attr_ok = true
-      next()
-    }).catch(e=>{
-      // failure to get the url is ALSO failure to auth
+    } else {
       req.attr_ok = false
-      req.jwt_err= "User not authorized for " + req.attr
-      next()
-    })
+    }
+    next()
   } else {
     req.attr_ok = true
     next()

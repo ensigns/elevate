@@ -2,9 +2,11 @@ const assert = require('assert');
 const fetch = require("node-fetch")
 
 // "secret": camic
-
+// properties field:
 var jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.hF-y-LbX_ySDsQg80EP4BuU_P8xtRKBaKMQXLSC-2S8"
-var wrong_user_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.yaa_qazSR7uAfg3sqxsJvcnOq2fqWb_R50Vz6xoMdKo"
+jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImF0dHJzIjpbInN1cGVyIiwiZHVwZXIiXSwiaWF0IjoxNTE2MjM5MDIyLCJqdGkiOiI2Y2YzNmIzYy0xODhmLTQyY2YtYmFjMy02YjUxM2FjODdiZDciLCJleHAiOjE1NTI0MjU3NTd9.0R--1ryaVe32U6b0AgnqBq9fpgRWHXeTu4G0Le_FCcg"
+var wrong_scope_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.yaa_qazSR7uAfg3sqxsJvcnOq2fqWb_R50Vz6xoMdKo"
+wrong_scope_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.hF-y-LbX_ySDsQg80EP4BuU_P8xtRKBaKMQXLSC-2S8"
 var faked_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.C4kyd1e30G-noF1WkZibJQxuiJ43CCUpPWj7XnfcB7Q"
 
 var base = "http://localhost:4010"
@@ -48,18 +50,6 @@ describe('Router User Access Checks', function () {
       done(e)
     })
   })
-  it('fails for private route with wrong auth user', function (done) {
-    // wrong jwt should not work
-    this.timeout(10000)
-    fetch(private_url, {headers: {"Authorization": "Bearer " + wrong_user_jwt}}).then(x=>x.json()).then(x=>{
-      console.log(x)
-      assert.notEqual(x.status,"OK", "Correctly did not route")
-      done()
-    }).catch(e=>{
-      console.log(e)
-      done(e)
-    })
-  })
   it('fails for private route with wrong verification secret', function (done) {
     // wrong jwt should not work
     fetch(private_url, {headers: {"Authorization": "Bearer " + faked_jwt}}).then(x=>x.json()).then(x=>{
@@ -84,7 +74,7 @@ describe('Router User Access Checks', function () {
   })
   it('fails for super route with non super user', function (done) {
     // wrong jwt should not work
-    fetch(super_url, {headers: {"Authorization": "Bearer " + wrong_user_jwt}}).then(x=>x.json()).then(x=>{
+    fetch(super_url, {headers: {"Authorization": "Bearer " + wrong_scope_jwt}}).then(x=>x.json()).then(x=>{
       console.log(x)
       assert.notEqual(x.status,"OK", "Correctly did not route")
       done()

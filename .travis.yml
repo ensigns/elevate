@@ -10,14 +10,12 @@ install:
 
 before_script:
   - mv test/routes.json routes.json
-  - export SECRET="camic"
+  - export PUBKEY="camic"
   - export PORT=4010
 script:
 - cd test
 - http-server -s -p 8000 &
 - cd ../
-- node test/auth_service/app.js &
-- sleep 5
 - npm start &
 - sleep 10
 - npm test

@@ -34,7 +34,7 @@ try {
 try {
   let pubkey_path = "/keys/key.pub"
   if(fs.existsSync(pubkey_path)){
-    var PUBKEY = fs.readFileSync(ssl_pk_path, 'utf8')
+    var PUBKEY = fs.readFileSync(pubkey_path, 'utf8')
   }
 } catch (err){
   console.error(err)

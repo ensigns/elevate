@@ -18,9 +18,26 @@ let RESOLVER_CACHE = {}
 var HTTPS_MODE = false
 var https_options = {}
 // HTTPS IF AVALIABLE
+
+// let me use dot/array notation
+Object.byString = function(o, s) {
+    s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+    s = s.replace(/^\./, '');           // strip a leading dot
+    var a = s.split('.');
+    for (var i = 0, n = a.length; i < n; ++i) {
+        var k = a[i];
+        if (k in o) {
+            o = o[k];
+        } else {
+            return;
+        }
+    }
+    return o;
+}
+
 try {
-  let ssl_pk_path = "./ssl/privatekey.pem"
-  let ssl_cert_path = "./ssl/certificate.pem"
+  var ssl_pk_path = "./ssl/privatekey.pem"
+  var ssl_cert_path = "./ssl/certificate.pem"
   if (fs.existsSync(ssl_pk_path) && fs.existsSync(ssl_cert_path)) {
     HTTPS_MODE = true
     console.info("https mode")
@@ -32,9 +49,9 @@ try {
 }
 
 try {
-  let pubkey_path = "/keys/key.pub"
+  var pubkey_path = "/keys/key.pub"
   if(fs.existsSync(pubkey_path)){
-    var PUBKEY = fs.readFileSync(pubkey_path, 'utf8')
+    PUBKEY = fs.readFileSync(pubkey_path, 'utf8')
   }
 } catch (err){
   console.error(err)
@@ -154,6 +171,9 @@ async function useResolver(method, rule) {
             console.log("Got from cache: from: " + rule_check + " to : " + OUTvar)
         } else {
             OUTvar = await rp({
+              headers: {
+                'Authorization': "Bearer " + getToken(req)
+              },
               uri: rule.url.split("{IN}").join(INvar),
               json: true
           })
@@ -164,7 +184,7 @@ async function useResolver(method, rule) {
           OUTvar=OUTvar[0]
         }
         if (rule.field) {
-            OUTvar = OUTvar[rule.field]
+            OUTvar = Object.byString(OUTvar, rulefield)
         }
         // substitute all OUT and IN
         var result = rule.destination.split("{OUT}").join( afterVar + OUTvar + beforeVar ).split("{IN}").join(INvar);
@@ -180,6 +200,7 @@ app.use(function(req, res, next){
     if (DISABLE_SEC) {
         req.verified = true
         req.jwt_err = "Security Disabled";
+        req.user_ok = true
         next()
     } else {
         jwt.verify(getToken(req), PUBKEY, function(err, decoded) {
@@ -242,7 +263,7 @@ app.use(function(req, res, next){
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         let statusCode = req.resolve_err.statusCode || 500
-        let body = req.resolve_err.error.toString()
+        let body = JSON.stringify(req.resolve_err)
         res.status(statusCode).send({"error":body})
     } else {
         console.log("public check", req.is_public)

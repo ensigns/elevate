@@ -295,6 +295,11 @@ app.use("/", function(req, res, next) {
           proxyReq.write( req.rawBody );
           proxyReq.end();
         }
+      },
+      onProxyRes: function(proxyReq, req, res){
+        if (proxyReq.statusCode>= 400){
+          res.status(proxyReq.statusCode).send({err: proxyReq.statusMessage})
+        }
       }
     })(req, res, next)
 })

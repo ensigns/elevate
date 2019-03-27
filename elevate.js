@@ -7,6 +7,7 @@ const getUrlParam = require("./getUrlParam")
 var jwt = require('jsonwebtoken');
 var proxy = require('http-proxy-middleware');
 const https = require('https')
+var cookieParser = require('cookie-parser')
 
 var PUBKEY = process.env.PUBKEY
 var DISABLE_SEC = process.env.DISABLE_SEC || false
@@ -19,6 +20,10 @@ var HTTPS_MODE = false
 var https_options = {}
 // HTTPS IF AVALIABLE
 
+// get cookies
+app.use(cookieParser())
+
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
 // let me use dot/array notation
 Object.byString = function(o, s) {
@@ -286,6 +291,7 @@ app.use(function(req, res, next){
 // handle the proxy routes themselves
 app.use("/", function(req, res, next) {
     proxy({
+      secure: false,
       onError(err, req, res) {
         console.log(err)
         res.status(500).send(err)

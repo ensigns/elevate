@@ -18,9 +18,27 @@ let RESOLVER_CACHE = {}
 var HTTPS_MODE = false
 var https_options = {}
 // HTTPS IF AVALIABLE
+
+
+// let me use dot/array notation
+Object.byString = function(o, s) {
+    s = s.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+    s = s.replace(/^\./, '');           // strip a leading dot
+    var a = s.split('.');
+    for (var i = 0, n = a.length; i < n; ++i) {
+        var k = a[i];
+        if (k in o) {
+            o = o[k];
+        } else {
+            return;
+        }
+    }
+    return o;
+}
+
 try {
-  let ssl_pk_path = "./ssl/privatekey.pem"
-  let ssl_cert_path = "./ssl/certificate.pem"
+  var ssl_pk_path = "./ssl/privatekey.pem"
+  var ssl_cert_path = "./ssl/certificate.pem"
   if (fs.existsSync(ssl_pk_path) && fs.existsSync(ssl_cert_path)) {
     HTTPS_MODE = true
     console.info("https mode")
@@ -32,9 +50,9 @@ try {
 }
 
 try {
-  let pubkey_path = "/keys/key.pub"
+  var pubkey_path = "/keys/key.pub"
   if(fs.existsSync(pubkey_path)){
-    var PUBKEY = fs.readFileSync(ssl_pk_path, 'utf8')
+    PUBKEY = fs.readFileSync(pubkey_path, 'utf8')
   }
 } catch (err){
   console.error(err)
@@ -75,7 +93,7 @@ app.use(function(req, res, next) {
 });
 
 // this method takes in the original url and config to resolve which url to ask for
-async function resolve(url, config) {
+async function resolve(url, config, req) {
     let service = url.split("/")[1]
     let type = url.split("/")[2]
     let method = ""
@@ -94,7 +112,7 @@ async function resolve(url, config) {
         outUrl += serviceList[service]["_base"] || ""
         if (isResolver) {
             attr = serviceList[service][type]["_resolver"].attr
-            outUrl += await useResolver(method, serviceList[service][type]["_resolver"])
+            outUrl += await useResolver(method, serviceList[service][type]["_resolver"], req)
         } else {
             // does this have an attribute
             attr = serviceList[service][type][method].attr
@@ -121,7 +139,7 @@ async function resolve(url, config) {
 }
 
 // in cases where a resolver, rather than a string, is used for a method, use this to lookup w/o cache
-async function useResolver(method, rule) {
+async function useResolver(method, rule, req) {
         var INvar = method;
         var beforeVar = "";
         var afterVar = "";
@@ -154,6 +172,9 @@ async function useResolver(method, rule) {
             console.log("Got from cache: from: " + rule_check + " to : " + OUTvar)
         } else {
             OUTvar = await rp({
+              headers: {
+                'Authorization': "Bearer " + getToken(req)
+              },
               uri: rule.url.split("{IN}").join(INvar),
               json: true
           })
@@ -164,7 +185,7 @@ async function useResolver(method, rule) {
           OUTvar=OUTvar[0]
         }
         if (rule.field) {
-            OUTvar = OUTvar[rule.field]
+            OUTvar = Object.byString(OUTvar, rule.field)
         }
         // substitute all OUT and IN
         var result = rule.destination.split("{OUT}").join( afterVar + OUTvar + beforeVar ).split("{IN}").join(INvar);
@@ -180,6 +201,7 @@ app.use(function(req, res, next){
     if (DISABLE_SEC) {
         req.verified = true
         req.jwt_err = "Security Disabled";
+        req.user_ok = true
         next()
     } else {
         jwt.verify(getToken(req), PUBKEY, function(err, decoded) {
@@ -200,7 +222,7 @@ app.use(function(req, res, next){
 
 // handle resolver
 app.use(function(req, res, next){
-    resolve(req.originalUrl, config).then(x=>{
+    resolve(req.originalUrl, config, req).then(x=>{
         req.new_url = x.url
         req.is_public = x.public
         req.attr = x.attr
@@ -242,8 +264,8 @@ app.use(function(req, res, next){
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         let statusCode = req.resolve_err.statusCode || 500
-        let body = req.resolve_err.error.toString()
-        res.status(statusCode).send({"error":body})
+        let body = JSON.stringify(req.resolve_err)
+        res.status(statusCode).send({"type": "resolve error", "error":body})
     } else {
         console.log("public check", req.is_public)
         if ((req.attr_ok && req.user_ok) || req.is_public){
@@ -264,7 +286,10 @@ app.use(function(req, res, next){
 // handle the proxy routes themselves
 app.use("/", function(req, res, next) {
     proxy({
-      onError(err, req, res) { console.warn(err)},
+      onError(err, req, res) {
+        console.log(err)
+        res.status(500).send(err)
+      },
       changeOrigin: true,
       target:req.new_url.split("/").slice(0,3).join("/"),
       pathRewrite: function (path, req) {return req.new_url.split("/").slice(3).join("/") },
@@ -273,6 +298,11 @@ app.use("/", function(req, res, next) {
           console.log(req.rawBody.length)
           proxyReq.write( req.rawBody );
           proxyReq.end();
+        }
+      },
+      onProxyRes: function(proxyReq, req, res){
+        if (proxyReq.statusCode>= 400){
+          res.status(proxyReq.statusCode).send({err: proxyReq.statusMessage})
         }
       }
     })(req, res, next)

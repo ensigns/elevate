@@ -11,7 +11,6 @@ var cookieParser = require('cookie-parser')
 
 var PUBKEY = process.env.PUBKEY
 var DISABLE_SEC = process.env.DISABLE_SEC || false
-var REDIRECT = process.env.REDIRECT || false
 
 var PORT = process.env.PORT || 4010
 
@@ -268,9 +267,11 @@ app.use(function(req, res, next){
     if (req.resolve_failed){
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        let statusCode = req.resolve_err.statusCode || 500
-        let body = JSON.stringify(req.resolve_err)
-        res.status(statusCode).send({"type": "resolve error", "error":body})
+        var err = {}
+        err.__statusCode = req.resolve_err.statusCode || 500
+        err.err = JSON.stringify(req.resolve_err)
+        err.type = "resolve error"
+        next(err)
     } else {
         console.log("public check", req.is_public)
         if ((req.attr_ok && req.user_ok) || req.is_public){
@@ -278,12 +279,11 @@ app.use(function(req, res, next){
         } else {
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-            if (REDIRECT){
-                res.status(401).redirect(REDIRECT);
-            }
-            else {
-                res.status(401).send({"error":req.jwt_err})
-            }
+            var err = {}
+            err.__statusCode = 401
+            err.err = JSON.stringify(req.jwt_err)
+            err.type = "JWT error"
+            next(err)
         }
     }
 })
@@ -294,7 +294,8 @@ app.use("/", function(req, res, next) {
       secure: false,
       onError(err, req, res) {
         console.log(err)
-        res.status(500).send(err)
+        err.__statusCode = 500
+        next(err)
       },
       changeOrigin: true,
       target:req.new_url.split("/").slice(0,3).join("/"),
@@ -308,10 +309,21 @@ app.use("/", function(req, res, next) {
       },
       onProxyRes: function(proxyReq, req, res){
         if (proxyReq.statusCode>= 400){
-          res.status(proxyReq.statusCode).send({err: proxyReq.statusMessage})
+          var err = {}
+          err.__statusCode = proxyReq.statusCode
+          err.err = proxyReq.statusMessage
+          err.type = "proxy error"
+          next(err)
         }
       }
     })(req, res, next)
+})
+
+// handle errors all at once
+app.use(function(err, req, res, next) {
+  console.error(JSON.stringify(err))
+  var status_code = err.__statusCode || 500;
+  res.status(status_code).send(err)
 })
 
 if (HTTPS_MODE){

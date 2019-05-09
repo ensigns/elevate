@@ -62,12 +62,8 @@ try {
   console.error(err)
 }
 
-let loading_config
-try {
-    loading_config = JSON.parse(fs.readFileSync("routes.json"));
-} catch (e) {
-    loading_config = JSON.parse(fs.readFileSync("routes.json.example"));
-}
+let loading_config = JSON.parse(fs.readFileSync("routes.json"));
+
 const config = loading_config;
 
 const getToken = function(req) {

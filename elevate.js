@@ -285,7 +285,7 @@ app.use(function(req, res, next) {
     req.attr_ok = true
     next()
   }
-  if (config.hasOwnProperty("auth") && req.attr && config.auth.permissions_field) {
+  else if (config.hasOwnProperty("auth") && req.attr && config.auth.permissions_field) {
     let ok_attrs = req.jwt_data[config.auth.permissions_field] || []
     if (ok_attrs.includes(req.attr)) {
       req.attr_ok = true
@@ -328,13 +328,15 @@ app.use(function(req, res, next) {
 
 // rewriter
 app.use(function(req, res, next){
-  res.oldWrite = res.write
-  res.write = function(d) {
-    if (req.key_method && !DISABLE_SEC) {
-      console.log("using access control checker")
-      d = keyCheck(d, req)
+  if (!DISABLE_SEC){
+    res.oldWrite = res.write
+    res.write = function(d) {
+      if (req.key_method) {
+        console.log("using access control checker")
+        d = keyCheck(d, req)
+      }
+      res.oldWrite(d)
     }
-    res.oldWrite(d)
   }
   next()
 })

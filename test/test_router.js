@@ -14,6 +14,7 @@ var base = "http://localhost:4010"
 var public_url = base + "/public/test/test"
 var private_url = base + "/private/test/test"
 var super_url = base + "/private/test/super"
+var keyed_url = base + "/private/test/keyed"
 
 // test without jwt, public - should be ok
 describe('Router User Access Checks', function () {
@@ -85,7 +86,7 @@ describe('Router User Access Checks', function () {
   })
   it('gets two items for keyed', function (done) {
     // wrong jwt should not work
-    fetch(super_url, {headers: {"Authorization": "Bearer " + jwt}}).then(x=>x.json()).then(x=>{
+    fetch(keyed_url, {headers: {"Authorization": "Bearer " + jwt}}).then(x=>x.json()).then(x=>{
       console.log(x)
       assert.equal(x.length, 2, "got two items for keyed jwt")
       done()
@@ -96,7 +97,7 @@ describe('Router User Access Checks', function () {
   })
   it('only gets one item for unkeyed', function (done) {
     // wrong jwt should not work
-    fetch(super_url, {headers: {"Authorization": "Bearer " + wrong_scope_jwt}}).then(x=>x.json()).then(x=>{
+    fetch(keyed_url, {headers: {"Authorization": "Bearer " + wrong_scope_jwt}}).then(x=>x.json()).then(x=>{
       console.log(x)
       assert.equal(x.length, 1, "got 1 item for unkeyed jwt")
       done()

@@ -5,4 +5,4 @@ COPY . /root/src
 WORKDIR /root/src
 RUN npm install
 EXPOSE 4010
-CMD forever router.js
+CMD forever elevate.js

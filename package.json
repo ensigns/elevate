@@ -17,7 +17,7 @@
     "url": "https://github.com/caMicroscope/security/issues"
   },
   "scripts": {
-    "start": "node elevate.js",
+    "start": "node router.js",
     "test": "mocha test/*.js --exit"
   },
   "homepage": "https://github.com/caMicroscope/security#readme",
@@ -28,7 +28,6 @@
     "http-proxy": "^1.17.0",
     "http-proxy-middleware": "^0.19.0",
     "jsonwebtoken": "^8.3.0",
-    "passport-openidconnect": "0.0.2",
     "request": "^2.87.0",
     "request-promise": "^4.2.2"
   }

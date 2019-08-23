@@ -1,4 +1,4 @@
-# Elevate Security and Router Container
+# elevate Security and Router Container
 
 This is intended for use with a docker deployment, or a deployment behind a reverse proxy. All requests should be directed through this service or container.
 
@@ -28,6 +28,18 @@ permissions_field - the field in the given jwt to check for permission attribute
 #### attributes
 A specific route can be assigned an attribute regarding its access ("attr"). If an attr is present on a route, it's routed if and only if the user check for that attr returns okay.
 
+
+#### Keys
+For documents expected to return one or a list of JSON documents, you can prevent a user from seeing documents with a given field (a "key") not matching any of the "keys" in the user's token.
+The name of the "key" in the token and document should be defined as "key_field" under security in the routes config
+This should be defined per route in the config via the "key_method" field.
+
+Supported options include:
+ - "filter" -- filter documents which have a key the user does not out of results
+ - "single" -- return "{}" if the single document has a key which the user does not have
+
+Currently, resolvers do not work with keys. This should be fixed soon. If you're reading this, please put in an issue if you desire this functionality, to signal that this should get focus/priority.
+
 ### enviornment variables
 
 As of now, two settings may be changed with enviornment variables:
@@ -43,8 +55,3 @@ url - the url to check
 field - the field in the response to assign to {OUT}
 before - a string or list of strings to get the variable before; if multiple match, the first match is used
 after - a string or list of strings to get the variable after; if multiple match, the first match is used
-
-### Keycheck
-!!!! Keycheck is not yet implemented, but part of a potential concept for later
-
-Checks if a named field is present in both the users keychain and the document; for document/resource level access control. Can be used with resolvers.

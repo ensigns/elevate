@@ -2,11 +2,11 @@
   "root":"http://ca-front:80/",
   "_root_public": "true",
   "auth":{
-    "permissions_field":"attrs"
+    "permissions_field":"attrs",
+    "key_field": "accessCollection"
   },
   "services":{
     "data":{
-      "_public": "true",
       "_base": "http://ca-data:9099/services/caMicroscope",
       "Mark": {
         "get":"/Mark/query/get",
@@ -14,14 +14,17 @@
         "multi":"/Mark/query/multiFind",
         "findBound":"/Mark/query/findBound",
         "types":"/Mark/query/findTypes",
+        "typesExec":"/Mark/query/findTypesExec",
         "post":{"path": "/Mark/submit/json", "attr": "write"},
         "delete":{"path": "/Mark/delete/deleteMark", "attr": "write"}
       },
       "Heatmap": {
         "get":"/Heatmap/query/get",
         "find":"/Heatmap/query/find",
+        "types":"/Heatmap/query/findTypes",
         "post":{"path": "/Heatmap/submit/json", "attr": "write"},
-        "delete":{"path": "/Heatmap/delete/deleteHeatmap", "attr": "write"}
+        "delete":{"path": "/Heatmap/delete/deleteHeatmap", "attr": "write"},
+        "threshold":{"path": "/Heatmap/delete/updateThreshold", "attr": "write"}
       },
       "Overlay": {
         "get":"/Overlay/query/get",
@@ -31,16 +34,27 @@
       },
       "Slide": {
         "get":"/Slide/query/get",
-        "find":"/Slide/query/find",
+        "find":{"path":"/Slide/query/find", "key_method": "filter"},
         "post":{"path": "/Slide/submit/json", "attr": "write"},
         "delete":{"path": "/Slide/delete/deleteSlide", "attr": "write"},
-        "update":{"path": "/Slide/update/updateSlide", "attr": "write"}
+        "update":{"path": "/Slide/delete/updateSlide", "attr": "write"}
       },
       "Template": {
         "get":"/Template/query/get",
         "find":"/Template/query/find",
         "post":{"path": "/Template/submit/json", "attr": "write"},
         "delete":{"path": "/Template/delete/deleteTemplate", "attr": "write"}
+      },
+      "HeatmapEdit": {
+        "get":"/HeatmapEdit/query/get",
+        "find":"/HeatmapEdit/query/find",
+        "post":{"path": "/HeatmapEdit/submit/json", "attr": "write"},
+        "delete":{"path": "/HeatmapEdit/delete/delete", "attr": "write"},
+        "update":{"path": "/HeatmapEdit/delete/update", "attr": "write"}
+      },
+      "Auth": {
+        "get":{"path": "/Authorization/query/getAuth", "attr": "admin"},
+        "post":{"path": "/Authorization/submit/json", "attr": "admin"}
       }
     },
     "img": {
@@ -67,6 +81,13 @@
       "Slide":{
         "info":"/data/one",
         "thumb":"/data/thumbnail"
+      }
+    },
+    "auth": {
+      "_public": "true",
+      "_base": "http://ca-auth:8010",
+      "Token":{
+        "check":"/check"
       }
     }
   }

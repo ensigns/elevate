@@ -3,10 +3,10 @@ const fetch = require("node-fetch")
 
 // "secret": camic
 // properties field:
-var jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.hF-y-LbX_ySDsQg80EP4BuU_P8xtRKBaKMQXLSC-2S8"
-jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImF0dHJzIjpbInN1cGVyIiwiZHVwZXIiXSwiaWF0IjoxNTE2MjM5MDIyfQ.KRE8-qKHXr-Tqp0eFcUPSp5ylU3JzPEi-LzK3-JoOdo"
+var jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImF0dHJzIjpbInN1cGVyIiwiZHVwZXIiXSwia2V5IjpbImtleWVkIl0sImlhdCI6MTUxNjIzOTAyMiwianRpIjoiOGZhZTBiOTUtMzg3MS00MmZhLTkwZTItOTkwOGRlOTY5MWEwIiwiZXhwIjoxNTY2NTgxOTc5fQ.cmvZBPe72k_3yi1ULNPQ9LTd6NkOVeYvLKtqBKdm3Jo"
 var wrong_scope_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.yaa_qazSR7uAfg3sqxsJvcnOq2fqWb_R50Vz6xoMdKo"
 wrong_scope_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.hF-y-LbX_ySDsQg80EP4BuU_P8xtRKBaKMQXLSC-2S8"
+var wrong_key_jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImF0dHJzIjpbInN1cGVyIiwiZHVwZXIiXSwia2V5IjpbInVua2V5ZWQiXSwiaWF0IjoxNTE2MjM5MDIyLCJqdGkiOiI4ZmFlMGI5NS0zODcxLTQyZmEtOTBlMi05OTA4ZGU5NjkxYTAiLCJleHAiOjE1NjY1ODIwNDN9.2HbuB-9d3ymk_hTu1RZYdSpcAeBZaHBjwztmzACBQvI"
 var faked_jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImNhTWljcm9zY29wZSIsImlhdCI6MTUxNjIzOTAyMn0.C4kyd1e30G-noF1WkZibJQxuiJ43CCUpPWj7XnfcB7Q"
 
 var base = "http://localhost:4010"
@@ -77,6 +77,28 @@ describe('Router User Access Checks', function () {
     fetch(super_url, {headers: {"Authorization": "Bearer " + wrong_scope_jwt}}).then(x=>x.json()).then(x=>{
       console.log(x)
       assert.notEqual(x.status,"OK", "Correctly did not route")
+      done()
+    }).catch(e=>{
+      console.log(e)
+      done(e)
+    })
+  })
+  it('gets two items for keyed', function (done) {
+    // wrong jwt should not work
+    fetch(super_url, {headers: {"Authorization": "Bearer " + jwt}}).then(x=>x.json()).then(x=>{
+      console.log(x)
+      assert.equal(x.length, 2, "got two items for keyed jwt")
+      done()
+    }).catch(e=>{
+      console.log(e)
+      done(e)
+    })
+  })
+  it('only gets one item for unkeyed', function (done) {
+    // wrong jwt should not work
+    fetch(super_url, {headers: {"Authorization": "Bearer " + wrong_scope_jwt}}).then(x=>x.json()).then(x=>{
+      console.log(x)
+      assert.equal(x.length, 1, "got 1 item for unkeyed jwt")
       done()
     }).catch(e=>{
       console.log(e)

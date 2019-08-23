@@ -17,7 +17,7 @@
     "url": "https://github.com/caMicroscope/security/issues"
   },
   "scripts": {
-    "start": "node router.js",
+    "start": "node elevate.js",
     "test": "mocha test/*.js --exit"
   },
   "homepage": "https://github.com/caMicroscope/security#readme",

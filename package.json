@@ -27,7 +27,7 @@
     "express-http-proxy": "^1.4.0",
     "http-proxy": "^1.18.1",
     "http-proxy-middleware": "^0.19.0",
-    "jsonwebtoken": "^8.3.0",
+    "jsonwebtoken": "^9.0.0",
     "request": "^2.87.0",
     "request-promise": "^4.2.2"
   }
